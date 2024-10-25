@@ -21,6 +21,7 @@ struct Repo {
 #[derive(Deserialize, Debug, Clone)]
 struct Payload {
     commits: Option<Vec<Commit>>,
+    ref_type: Option<String>,
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -30,7 +31,7 @@ struct Commit {}
 struct Event {
     repo: Repo,
     r#type: EventType,
-    payload: Option<Payload>,
+    payload: Payload,
 }
 
 #[derive(Deserialize, Debug)]
@@ -84,28 +85,36 @@ fn main() -> Result<(), Box<dyn Error>> {
     let Args { user_name } = Args::parse();
     let json = fetch(api_key, user_name).expect("te").text();
 
-    let actions = serde_json::from_str::<Vec<Event>>(&json.expect("tet")).unwrap();
+    let events = serde_json::from_str::<Vec<Event>>(&json.expect("tet")).unwrap();
 
-    for action in actions {
-        match action.r#type {
+    for event in events {
+        match event.r#type {
             EventType::PullRequestEvent => {
-                println!(" - Opened a pull request in {}", action.repo.name);
+                println!(" - Opened a pull request in {}", event.repo.name);
             }
             EventType::PushEvent => {
-                if action.payload.is_some() && action.payload.clone().unwrap().commits.is_some() {
+                if event.payload.clone().commits.is_some() {
                     println!(
                         " - Pushed {} commits to {}.",
-                        action.payload.clone().unwrap().commits.unwrap().len(),
-                        action.repo.name
+                        event.payload.clone().commits.unwrap().len(),
+                        event.repo.name
                     );
                 }
             }
-            EventType::CreateEvent => {}
+            EventType::CreateEvent => {
+                let r#type = event.payload.clone().ref_type.unwrap();
+
+                if r#type == "repository" {
+                    println!(" - Created a repository named {}", event.repo.name);
+                } else {
+                    println!(" - Created a {} in {}", r#type, event.repo.name);
+                }
+            }
             EventType::WatchEvent => {
-                println!(" - Starred {}", action.repo.name);
+                println!(" - Starred {}", event.repo.name);
             }
             EventType::ForkEvent => {
-                println!(" - Forked {}", action.repo.name);
+                println!(" - Forked {}", event.repo.name);
             }
             _ => {
                 eprintln!("Unhandled Type of Event");
