@@ -10,7 +10,7 @@ use std::error::Error;
 #[derive(Parser)]
 #[command(version, about, author)]
 pub struct Args {
-    /// Github User
+    /// Github Username to fetch activity for
     #[arg(value_parser = validate_username)]
     user_name: String,
 }
