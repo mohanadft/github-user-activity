@@ -86,6 +86,14 @@ fn fetch(token: String, user_name: String) -> Result<reqwest::blocking::Response
         .send()?)
 }
 
+fn capitalize_first_letter(s: &str) -> String {
+    let mut chars = s.chars();
+    match chars.next() {
+        None => String::new(),
+        Some(f) => f.to_uppercase().collect::<String>() + chars.as_str(),
+    }
+}
+
 const API_KEY_ENV: &str = "TOKEN";
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -131,11 +139,10 @@ fn main() -> Result<(), Box<dyn Error>> {
                 println!(" - Forked {}", event.repo.name);
             }
             EventType::IssuesEvent => {
-                println!(
-                    " - {} an issue in {}",
-                    event.payload.action.unwrap(),
-                    event.repo.name
-                );
+                let action = event.payload.action.unwrap();
+                let capitalized_action = capitalize_first_letter(&action);
+
+                println!(" - {} an issue in {}", capitalized_action, event.repo.name);
             }
         }
     }
