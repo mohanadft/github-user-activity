@@ -1,15 +1,17 @@
 use clap::Parser;
 use dotenvy::dotenv;
+use regex::Regex;
 use reqwest;
 use reqwest::header::{HeaderMap, HeaderValue, ACCEPT, USER_AGENT};
 use serde::Deserialize;
-use std::{env, error::Error};
+use std::env;
+use std::error::Error;
 
 #[derive(Parser)]
 #[command(version, about, author)]
 pub struct Args {
     /// Github User
-    #[arg()]
+    #[arg(value_parser = validate_username)]
     user_name: String,
 }
 
@@ -22,6 +24,7 @@ struct Repo {
 struct Payload {
     commits: Option<Vec<Commit>>,
     ref_type: Option<String>,
+    action: String,
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -41,7 +44,17 @@ enum EventType {
     CreateEvent,
     WatchEvent,
     ForkEvent,
-    StarEvent,
+    IssuesEvent,
+}
+
+fn validate_username(user_name: &str) -> Result<String, String> {
+    let gh_username_regex = Regex::new(r"^[a-zA-Z0-9_-]{1,39}$").unwrap();
+
+    if gh_username_regex.is_match(user_name) {
+        return Ok(user_name.to_string());
+    } else {
+        return Err(format!("{} is an invalid GitHub username", user_name));
+    }
 }
 
 fn load_env_variable(key: &str) -> Result<String, env::VarError> {
@@ -83,6 +96,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .map_err(|e| format!("Error fetching {}: {}", API_KEY_ENV, e))?;
 
     let Args { user_name } = Args::parse();
+
     let json = fetch(api_key, user_name).expect("te").text();
 
     let events = serde_json::from_str::<Vec<Event>>(&json.expect("tet")).unwrap();
@@ -116,8 +130,11 @@ fn main() -> Result<(), Box<dyn Error>> {
             EventType::ForkEvent => {
                 println!(" - Forked {}", event.repo.name);
             }
-            _ => {
-                eprintln!("Unhandled Type of Event");
+            EventType::IssuesEvent => {
+                println!(
+                    " - {} an issue in {}",
+                    event.payload.action, event.repo.name
+                );
             }
         }
     }
