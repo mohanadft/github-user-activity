@@ -24,7 +24,7 @@ struct Repo {
 struct Payload {
     commits: Option<Vec<Commit>>,
     ref_type: Option<String>,
-    action: String,
+    action: Option<String>,
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -133,7 +133,8 @@ fn main() -> Result<(), Box<dyn Error>> {
             EventType::IssuesEvent => {
                 println!(
                     " - {} an issue in {}",
-                    event.payload.action, event.repo.name
+                    event.payload.action.unwrap(),
+                    event.repo.name
                 );
             }
         }
