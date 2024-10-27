@@ -32,7 +32,7 @@ After getting your API credential, you just want to export the `TOKEN` environme
 ```bash
 export TOKEN=[Your API Key]
 ```
-
+Note: environment variables are temporarily availabe based on the session, so whenever you want to use the program you have to export it once before using, but if you exit your terminal (terminal tab), and opened a new one, you have to export it again.
 ## ⌨️  Usage
 
 Simple and straightforward! Just provide a GitHub username as the argument to fetch the user’s activity summary.
