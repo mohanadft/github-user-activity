@@ -4,6 +4,7 @@ use regex::Regex;
 use reqwest;
 use reqwest::header::{HeaderMap, HeaderValue, ACCEPT, USER_AGENT};
 use serde::Deserialize;
+use serde_json::Value;
 use std::env;
 use std::error::Error;
 
@@ -13,6 +14,10 @@ pub struct Args {
     /// Github Username to fetch activity for
     #[arg(value_parser = validate_username)]
     user_name: String,
+
+    /// Number of Followers
+    #[arg(short, long)]
+    followers: bool,
 }
 
 #[derive(Deserialize, Debug)]
@@ -61,9 +66,17 @@ fn load_env_variable(key: &str) -> Result<String, env::VarError> {
     env::var(key)
 }
 
-fn fetch(token: String, user_name: String) -> Result<reqwest::blocking::Response, reqwest::Error> {
+fn fetch(
+    token: String,
+    user_name: &str,
+    resource: Option<String>,
+) -> Result<reqwest::blocking::Response, reqwest::Error> {
     let client = reqwest::blocking::Client::new();
-    let url = format!("https://api.github.com/users/{}/events", user_name);
+
+    let url = match resource {
+        Some(resource) => format!("https://api.github.com/users/{}/{}", user_name, resource),
+        None => format!("https://api.github.com/users/{}", user_name),
+    };
 
     let mut headers = HeaderMap::new();
 
@@ -103,11 +116,23 @@ fn main() -> Result<(), Box<dyn Error>> {
     let api_key = load_env_variable(API_KEY_ENV)
         .map_err(|e| format!("Error fetching {}: {}", API_KEY_ENV, e))?;
 
-    let Args { user_name } = Args::parse();
+    let Args {
+        user_name,
+        followers,
+    } = Args::parse();
 
-    let json = fetch(api_key, user_name).expect("te").text();
+    if followers {
+        let response = fetch(api_key, &user_name, None).expect("te");
 
-    let events = serde_json::from_str::<Vec<Event>>(&json.expect("tet")).unwrap();
+        let json: Value = response.json()?;
+
+        println!("{}'s Followers Number: {}", user_name, json["followers"]);
+        return Ok(());
+    }
+
+    let response = fetch(api_key, &user_name, Some("events".to_string())).expect("te");
+
+    let events: Vec<Event> = response.json()?;
 
     for event in events {
         match event.r#type {
