@@ -23,6 +23,16 @@ Installing `github-user-activity` is a breeze! First, make sure you have Rust in
   cargo install --path .                                           # Install the package globally
 ```
 
+## Pre Usage 🧪
+
+Before using the package, you have to provide your own github api key, so you can authenticate when fetching github API. [See this page for more info on how to get your API key](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens)
+
+After getting your API credential, you just want to export the `TOKEN` environment variable in order for the program to recognize it.
+
+```bash
+export TOKEN=[Your API Key]
+```
+
 ## ⌨️  Usage
 
 Simple and straightforward! Just provide a GitHub username as the argument to fetch the user’s activity summary.
