@@ -28,7 +28,7 @@ Installing `github-user-activity` is a breeze! First, make sure you have Rust in
 Simple and straightforward! Just provide a GitHub username as the argument to fetch the user’s activity summary.
 
 ```bash
-  github-user-activity <USERNAME>
+  ghua <USERNAME>
 
   Arguments:
     <USERNAME>    GitHub username to fetch activity for
