@@ -9,7 +9,7 @@ This tool allows you to get a summary of a GitHub user's contributions, reposito
 
 - [ ] **Contribution Count**: Fetch the number of contributions the user has made in the past year.
 - [ ] **Public Repositories**: Get the list of public repositories owned by the user.
-- [ ] **Followers**: Retrieve the number of followers.
+- [x] **Followers**: Retrieve the number of followers.
 - [ ] **Gists**: See the number of public gists by the user.
 - [x] **Recent Activity**: Check out the user’s latest events and activity on GitHub.
 
@@ -44,8 +44,9 @@ Simple and straightforward! Just provide a GitHub username as the argument to fe
     <USERNAME>    GitHub username to fetch activity for
 
   Options:
-    -h, --help     Print help information
-    -V, --version  Print version information
+    -f, --followers  Number of Followers
+    -h, --help       Print help information
+    -V, --version    Print version information
 ```
 
 ## 🤝 Contributing
