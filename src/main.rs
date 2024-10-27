@@ -132,7 +132,20 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let response = fetch(api_key, &user_name, Some("events".to_string())).expect("te");
 
+    if response.status().is_client_error() && response.status() == 404 {
+        return Err(format!("Username {} Not Found", user_name).into());
+    }
+
+    if response.status().is_server_error() {
+        return Err("Server Error".into());
+    }
+
     let events: Vec<Event> = response.json()?;
+
+    if events.len() == 0 {
+        println!("No Recent Activity For {}", user_name);
+        return Ok(());
+    }
 
     for event in events {
         match event.r#type {
