@@ -18,6 +18,10 @@ pub struct Args {
     /// Number of Followers
     #[arg(short, long)]
     followers: bool,
+
+    /// Number of Public Gists
+    #[arg(short, long)]
+    public_gists: bool,
 }
 
 #[derive(Deserialize, Debug)]
@@ -119,14 +123,24 @@ fn main() -> Result<(), Box<dyn Error>> {
     let Args {
         user_name,
         followers,
+        public_gists,
     } = Args::parse();
 
-    if followers {
+    if followers || public_gists {
         let response = fetch(api_key, &user_name, None).expect("te");
 
         let json: Value = response.json()?;
 
-        println!("{}'s Followers Number: {}", user_name, json["followers"]);
+        if followers {
+            println!("{}'s Followers Number: {}", user_name, json["followers"]);
+        }
+
+        if public_gists {
+            println!(
+                "{}'s Public Gists Number: {}",
+                user_name, json["public_gists"]
+            );
+        }
         return Ok(());
     }
 
